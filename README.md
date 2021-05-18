@@ -1,4 +1,4 @@
-# Webauthn-fido2-key-remover
+# Windows Webauthn/fido2 key remover
 A simple tool to remove WebAuthn credentials from windows.
 
 Unfortunately, Windows does not have a built in interface to remove fido2 platform keys.
