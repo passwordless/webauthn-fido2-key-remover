@@ -1,7 +1,9 @@
-# webauthn-fido2-key-remover
-Remove WebAuthn credentials from windows
+# Webauthn-fido2-key-remover
+A simple tool to remove WebAuthn credentials from windows.
 
 Unfortunately, Windows does not have a built in interface to remove fido2 platform keys.
-This console apps makes it easy to remove keys.
+This console apps makes it easy to remove webauthn keys from windows hello.
 
-Download the latest release
+[Download the latest release](https://github.com/passwordless/webauthn-fido2-key-remover/releases) or build from source yourself.
+
+https://user-images.githubusercontent.com/357283/118731043-d4a20780-b838-11eb-8862-235c676bda0a.png
