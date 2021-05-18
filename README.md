@@ -6,4 +6,4 @@ This console apps makes it easy to remove webauthn keys from windows hello.
 
 [Download the latest release](https://github.com/passwordless/webauthn-fido2-key-remover/releases) or build from source yourself.
 
-https://user-images.githubusercontent.com/357283/118731043-d4a20780-b838-11eb-8862-235c676bda0a.png
+![Screenhost](https://user-images.githubusercontent.com/357283/118731043-d4a20780-b838-11eb-8862-235c676bda0a.png)
