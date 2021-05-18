@@ -70,7 +70,7 @@ namespace webauthn_fido2_key_remover
             "[grey](Press [red]<space>[/] to toggle a key, " +
             "[green]<enter>[/] to procceed with removal)[/]")
         .AddChoices(keys.Select(x =>
-            (x.Id + ". " + x.Username).PadRight(20) + " - ".PadRight(5) + RPName(x.RpIdHash)))
+            (x.Id + ". " + Markup.Escape(x.Username)).PadRight(20) + " - ".PadRight(5) + RPName(x.RpIdHash)))
         );
 
 
