@@ -1,9 +1,10 @@
-﻿using Spectre.Console;
+﻿using CliWrap;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Management.Automation;
-using System.Management.Automation.Runspaces;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace webauthn_fido2_key_remover
@@ -28,27 +29,31 @@ namespace webauthn_fido2_key_remover
 
             //certutil -csp NGC -key
 
-            PSDataCollection<PSObject> psresult = null;
+            string keyString = "";
             await AnsiConsole.Status()
                 .Spinner(Spinner.Known.Arc)
                 .StartAsync("Loading fido2 keys", async ctx =>
                 {
-                    psresult = await RunScript("certutil -csp NGC -key", new Dictionary<string, object>());
+                    string error = "";
+
+                    (keyString, error) = await CertUtil("-csp NGC -key");
                 });
 
+            // Parse cert util response
             var keys = new List<FidoObject>();
-            // print the resulting pipeline objects to the console.
-            foreach (var item in psresult)
+            using (StringReader reader = new StringReader(keyString))
             {
-                var x = item.BaseObject.ToString();
-                if (x.Contains("FIDO"))
+                string line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    var details = x.Split("FIDO_AUTHENTICATOR//")[1];
-                    var result = details.Split("_");
-                    var f = new FidoObject() { Name = x, RpIdHash = result[0], UsernameHEX = result[1], Id = keys.Count + 1 };
-                    keys.Add(f);
+                    if (line.Contains("FIDO"))
+                    {
+                        var details = line.Split("FIDO_AUTHENTICATOR//")[1];
+                        var result = details.Split("_");
+                        var f = new FidoObject() { Name = line, RpIdHash = result[0], UsernameHEX = result[1], Id = keys.Count + 1 };
+                        keys.Add(f);
+                    }
                 }
-                //Console.WriteLine(item.BaseObject.ToString());
             }
 
             AnsiConsole.MarkupLine("[bold]Found " + keys.Count + " keys.[/]");
@@ -58,14 +63,14 @@ namespace webauthn_fido2_key_remover
     new MultiSelectionPrompt<string>()
         .Title("Select keys to [red]delete[/]:")
         .NotRequired() // Not required to have a favorite fruit
-        .PageSize(30)
+        .PageSize(8)
         .HighlightStyle(new Style(Color.Red, null, Decoration.Underline))
         .MoreChoicesText("[grey](Move up and down to reveal more keys)[/]")
         .InstructionsText(
             "[grey](Press [red]<space>[/] to toggle a key, " +
             "[green]<enter>[/] to procceed with removal)[/]")
         .AddChoices(keys.Select(x =>
-            (x.Id + ". " + x.Username).PadRight(40) + " - ".PadRight(15) + RPName(x.RpIdHash)))
+            (x.Id + ". " + x.Username).PadRight(20) + " - ".PadRight(5) + RPName(x.RpIdHash)))
         );
 
 
@@ -92,13 +97,9 @@ namespace webauthn_fido2_key_remover
                     var id = Convert.ToInt32(key.Split(".")[0]);
                     var name = keys.Single(x => x.Id == id).Name;
                     AnsiConsole.MarkupLine("[grey]certutil -csp NGC -delkey" + name + "[/]");
-                    var res = await RunScript("certutil -csp NGC -delkey " + name, null);
+                    var (res, error) = await CertUtil("-csp NGC -delkey " + name);
 
-                    foreach (var r in res)
-                    {
-                        AnsiConsole.MarkupLine("[grey]{0}[/]", Markup.Escape(r.BaseObject.ToString()));
-
-                    }
+                    AnsiConsole.MarkupLine("[grey]{0}[/]", Markup.Escape(res));
                 }
             }
 
@@ -122,28 +123,22 @@ namespace webauthn_fido2_key_remover
         /// </summary>
         /// <param name="scriptContents">The script file contents.</param>
         /// <param name="scriptParameters">A dictionary of parameter names and parameter values.</param>
-        static public async Task<PSDataCollection<PSObject>> RunScript(string scriptContents, Dictionary<string, object> scriptParameters)
+        static public async Task<(string result, string error)> CertUtil(string command)
         {
-            // create a new hosted PowerShell instance using the default runspace.
-            // wrap in a using statement to ensure resources are cleaned up.
+            var stdOutBuffer = new StringBuilder();
+            var stdErrBuffer = new StringBuilder();
+            var result = await Cli.Wrap("certutil")
+                .WithArguments(command)
+                .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                    .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+                    .WithValidation(CommandResultValidation.None)
+                .ExecuteAsync();
 
-            using (PowerShell ps = PowerShell.Create())
-            {
-
-                // specify the script code to run.
-                ps.AddScript(scriptContents);
-
-                // specify the parameters to pass into the script.
-                //ps.AddParameters(scriptParameters);
-
-                // execute the script and await the result.
-                var pipelineObjects = await ps.InvokeAsync().ConfigureAwait(false);
-
-                return pipelineObjects;
-            }
-
-
+            return (stdOutBuffer.ToString(), stdErrBuffer.ToString());
         }
+
+
+
 
         public class FidoObject
         {
