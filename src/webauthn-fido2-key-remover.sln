@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31112.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "webauthn-fido2-key-remover", "webauthn-fido2-key-remover.csproj", "{464C0E27-2DF2-4FD3-9F3E-94FCEA40067E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{464C0E27-2DF2-4FD3-9F3E-94FCEA40067E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{464C0E27-2DF2-4FD3-9F3E-94FCEA40067E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{464C0E27-2DF2-4FD3-9F3E-94FCEA40067E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{464C0E27-2DF2-4FD3-9F3E-94FCEA40067E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F26B3275-8B3B-47B2-B745-E4CC77F6D4F4}
+	EndGlobalSection
+EndGlobal
