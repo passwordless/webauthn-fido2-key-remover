@@ -11,7 +11,7 @@ namespace webauthn_fido2_key_remover
 {
     class Program
     {
-
+        // possible todo, allow user to add more well-known rp-ids?
         private static Dictionary<string, string> WELL_KNOWN = new Dictionary<string, string>() {
             {"49960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d9763","localhost" },
             {"f1ad9ac3edf2aa5a40daf387493fd145a8a77646aa580136153d1164c7fd84ea", "passwordless.dev" }
@@ -24,18 +24,20 @@ namespace webauthn_fido2_key_remover
                 .LeftAligned()
                 .Color(Color.Yellow));
 
-            AnsiConsole.MarkupLine("A small tool built by Anders at Passwordless.dev to remove Windows 10 WebAuthn Keys");
+            AnsiConsole.Render(new Rule());
+            AnsiConsole.MarkupLine("A small tool built by Anders at https://passwordless.dev to remove Windows 10 WebAuthn Keys");
+            AnsiConsole.MarkupLine("Use the Github repo to report issues or contribute: https://github.com/passwordless/webauthn-fido2-key-remover");
+            AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[bold]Note:[/] To delete keys, you need to run this tool as administrator. If you do not want to do that, you can run `certutil -csp NGC -delkey <name>` manually.");
+            AnsiConsole.Render(new Rule());
 
-            //certutil -csp NGC -key
-
+            // Load keys using certutil
             string keyString = "";
             await AnsiConsole.Status()
                 .Spinner(Spinner.Known.Arc)
                 .StartAsync("Loading fido2 keys", async ctx =>
                 {
                     string error = "";
-
                     (keyString, error) = await CertUtil("-csp NGC -key");
                 });
 
@@ -58,36 +60,39 @@ namespace webauthn_fido2_key_remover
 
             AnsiConsole.MarkupLine("[bold]Found " + keys.Count + " keys.[/]");
 
-
+            // Select keys
             var keysToBeDeleted = AnsiConsole.Prompt(
-    new MultiSelectionPrompt<string>()
-        .Title("Select keys to [red]delete[/]:")
-        .NotRequired() // Not required to have a favorite fruit
-        .PageSize(8)
-        .HighlightStyle(new Style(Color.Red, null, Decoration.Underline))
-        .MoreChoicesText("[grey](Move up and down to reveal more keys)[/]")
-        .InstructionsText(
-            "[grey](Press [red]<space>[/] to toggle a key, " +
-            "[green]<enter>[/] to procceed with removal)[/]")
-        .AddChoices(keys.Select(x =>
-            (x.Id + ". " + Markup.Escape(x.Username)).PadRight(20) + " - ".PadRight(5) + RPName(x.RpIdHash)))
-        );
+                new MultiSelectionPrompt<string>()
+                    .Title("Select keys to [red]delete[/]. Username - sha256 RP ID.")
+                    .NotRequired() // Not required to have a favorite fruit
+                    .PageSize(8)
+                    .HighlightStyle(new Style(Color.Red, null, Decoration.Underline))
+                    .MoreChoicesText("[grey](Move up and down to reveal more keys)[/]")
+                    .InstructionsText(
+                        "[grey](Press [red]<space>[/] to toggle a key, " +
+                        "[green]<enter>[/] to procceed with removal)[/]")
+                    .AddChoices(keys.Select(x =>
+                        (x.Id + ". " + Markup.Escape(x.Username)).PadRight(20) + " - ".PadRight(5) + GetRpID(x.RpIdHash)))
+                    );
 
 
             if (keysToBeDeleted.Count > 0)
             {
 
+                // Preview selected keys
                 AnsiConsole.MarkupLine("Selected keys: ");
                 foreach (var k in keysToBeDeleted)
                 {
                     AnsiConsole.MarkupLine(k);
                 }
 
+                // Confirm deleteion?
                 if (!AnsiConsole.Confirm("Delete " + keysToBeDeleted.Count + " keys?"))
                 {
                     return;
                 }
 
+                // Delete
                 foreach (var key in keysToBeDeleted)
                 {
                     var rule = new Rule("[red]Deleting... [/]" + key);
@@ -108,7 +113,12 @@ namespace webauthn_fido2_key_remover
             Console.ReadLine();
         }
 
-        static private string RPName(string hash)
+        /// <summary>
+        /// Prepend source string for well known hashes to increase readability
+        /// </summary>
+        /// <param name="hash"></param>
+        /// <returns></returns>
+        static private string GetRpID(string hash)
         {
             if (WELL_KNOWN.ContainsKey(hash))
             {
@@ -119,10 +129,10 @@ namespace webauthn_fido2_key_remover
         }
 
         /// <summary>
-        /// Runs a PowerShell script with parameters and prints the resulting pipeline objects to the console output. 
+        /// Run a command ín the cli
         /// </summary>
-        /// <param name="scriptContents">The script file contents.</param>
-        /// <param name="scriptParameters">A dictionary of parameter names and parameter values.</param>
+        /// <param name="command"></param>
+        /// <returns></returns>
         static public async Task<(string result, string error)> CertUtil(string command)
         {
             var stdOutBuffer = new StringBuilder();
@@ -138,12 +148,13 @@ namespace webauthn_fido2_key_remover
         }
 
 
-
-
+        /// <summary>
+        /// Represent a WebAutn credential / fido2 key
+        /// </summary>
         public class FidoObject
         {
 
-            private static System.Text.UTF8Encoding encoding = new System.Text.UTF8Encoding();
+            private static UTF8Encoding encoding = new UTF8Encoding();
             public string Name { get; set; }
             public string UsernameHEX { get; set; }
             public string Username
