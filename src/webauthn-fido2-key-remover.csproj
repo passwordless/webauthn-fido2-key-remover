@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>webauthn_fido2_key_remover</RootNamespace>
+    <ApplicationIcon>passless.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
