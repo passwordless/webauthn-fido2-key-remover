@@ -2,14 +2,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>webauthn_fido2_key_remover</RootNamespace>
     <ApplicationIcon>passless.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.3.2" />
-    <PackageReference Include="Spectre.Console" Version="0.39.0" />
+    <PackageReference Include="CliWrap" Version="3.6.4" />
+    <PackageReference Include="Spectre.Console" Version="0.47.0" />
   </ItemGroup>
 
 </Project>

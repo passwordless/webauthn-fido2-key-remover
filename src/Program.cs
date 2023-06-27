@@ -19,17 +19,17 @@ namespace webauthn_fido2_key_remover
 
         static async Task Main(string[] args)
         {
-            AnsiConsole.Render(
+            AnsiConsole.Write(
                 new FigletText("Passwordless.dev")
-                .LeftAligned()
+                .LeftJustified()
                 .Color(Color.Yellow));
 
-            AnsiConsole.Render(new Rule());
+            AnsiConsole.Write(new Rule());
             AnsiConsole.MarkupLine("A small tool built by Anders at https://passwordless.dev to remove Windows 10 WebAuthn Keys");
             AnsiConsole.MarkupLine("Use the Github repo to report issues or contribute: https://github.com/passwordless/webauthn-fido2-key-remover");
             AnsiConsole.WriteLine();
             AnsiConsole.MarkupLine("[bold]Note:[/] To delete keys, you need to run this tool as administrator. If you do not want to do that, you can run `certutil -csp NGC -delkey <name>` manually.");
-            AnsiConsole.Render(new Rule());
+            AnsiConsole.Write(new Rule());
 
             // Load keys using certutil
             string keyString = "";
@@ -46,7 +46,7 @@ namespace webauthn_fido2_key_remover
             using (StringReader reader = new StringReader(keyString))
             {
                 string line;
-                while ((line = reader.ReadLine()) != null)
+                while ((line = await reader.ReadLineAsync()) != null)
                 {
                     if (line.Contains("FIDO"))
                     {
@@ -86,7 +86,7 @@ namespace webauthn_fido2_key_remover
                     AnsiConsole.MarkupLine(k);
                 }
 
-                // Confirm deleteion?
+                // Confirm deletion?
                 if (!AnsiConsole.Confirm("Delete " + keysToBeDeleted.Count + " keys?"))
                 {
                     return;
@@ -96,8 +96,8 @@ namespace webauthn_fido2_key_remover
                 foreach (var key in keysToBeDeleted)
                 {
                     var rule = new Rule("[red]Deleting... [/]" + key);
-                    rule.Alignment = Justify.Left;
-                    AnsiConsole.Render(rule);
+                    rule.Justification = Justify.Left;
+                    AnsiConsole.Write(rule);
 
                     var id = Convert.ToInt32(key.Split(".")[0]);
                     var name = keys.Single(x => x.Id == id).Name;
